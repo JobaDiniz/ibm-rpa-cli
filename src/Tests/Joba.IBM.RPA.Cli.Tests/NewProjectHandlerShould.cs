@@ -5,7 +5,6 @@ using static Joba.IBM.RPA.Cli.ProjectCommand;
 
 namespace Joba.IBM.RPA.Cli.Tests
 {
-    [UsesVerify]
     [Trait("Category", "Integration")]
     public class NewProjectHandlerShould
     {

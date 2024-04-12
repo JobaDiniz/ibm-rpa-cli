@@ -2,7 +2,6 @@
 
 namespace Joba.IBM.RPA.Tests
 {
-    [UsesVerify]
     public class GitAttributesShould
     {
         [Fact]

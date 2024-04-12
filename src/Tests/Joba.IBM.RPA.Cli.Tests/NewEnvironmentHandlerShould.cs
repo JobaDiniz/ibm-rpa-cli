@@ -8,7 +8,6 @@ using static Joba.IBM.RPA.Cli.EnvironmentCommand.NewEnvironmentCommand;
 
 namespace Joba.IBM.RPA.Cli.Tests
 {
-    [UsesVerify]
     [Trait("Category", "Integration")]
     public class NewEnvironmentHandlerShould : RequireProjectTest
     {
