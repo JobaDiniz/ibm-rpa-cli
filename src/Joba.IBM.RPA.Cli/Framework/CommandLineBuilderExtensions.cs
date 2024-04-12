@@ -5,9 +5,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
-using OpenTelemetry;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
@@ -18,7 +15,6 @@ namespace Joba.IBM.RPA.Cli
     {
         internal static CommandLineBuilder AddInstrumentation(this CommandLineBuilder builder)
         {
-            CreateTracer(builder);
             RegisterActivitySource(builder);
             return builder;
 
@@ -28,21 +24,6 @@ namespace Joba.IBM.RPA.Cli
                 {
                     var source = new ActivitySource(RpaCommand.AssemblyName, RpaCommand.AssemblyVersion);
                     context.BindingContext.AddService(s => source);
-
-                    await next(context);
-                }, MiddlewareOrder.Configuration);
-            }
-
-            static void CreateTracer(CommandLineBuilder builder)
-            {
-                builder.AddMiddleware(async (context, next) =>
-                {
-                    // docker run -d --name jaeger -p 6831:6831/udp -p 5778:5778 -p 16686:16686 jaegertracing/all-in-one:1.6
-                    using var _ = Sdk.CreateTracerProviderBuilder()
-                    .ConfigureResource(r => r.AddService(RpaCommand.ServiceName, serviceVersion: RpaCommand.AssemblyVersion))
-                    .AddHttpClientInstrumentation()
-                    .AddSource(RpaCommand.AssemblyName)
-                    .Build();
 
                     await next(context);
                 }, MiddlewareOrder.Configuration);
@@ -63,14 +44,6 @@ namespace Joba.IBM.RPA.Cli
                         options.UseUtcTimestamp = true;
                         options.FileSizeLimitBytes = 1000000; //1mb
                     });
-
-                    builder.AddOpenTelemetry(o =>
-                    {
-                        o.IncludeFormattedMessage = true;
-                        o.AttachLogsToActivityEvent();
-                        //    .ConfigureResource(r => r.AddService(RpaCommand.ServiceName, serviceVersion: RpaCommand.AssemblyVersion))
-                    })
-                    .SetMinimumLevel(verbosity.ToLogLevel());
 
                     //configuring custom console logging
                     builder.AddConsoleFormatter<RpaConsoleFormatter, RpaConsoleFormatterOptions>(o => o.Verbosity = verbosity);
@@ -98,7 +71,7 @@ namespace Joba.IBM.RPA.Cli
                 }
                 catch (Exception ex)
                 {
-                    activity?.RecordException(ex);
+                    //activity?.RecordException(ex);
                     activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                     throw;
                 }
