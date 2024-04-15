@@ -49,7 +49,7 @@
 	  <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.14" />
 	  <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
 	  <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-	  <PackageReference Include="System.Net.Http.Json" Version="7.0.1" />
+	  <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
