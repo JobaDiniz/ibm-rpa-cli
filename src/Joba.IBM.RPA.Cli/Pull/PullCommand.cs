@@ -6,10 +6,10 @@ namespace Joba.IBM.RPA.Cli
     internal partial class PullCommand : Command
     {
         public const string CommandName = "pull";
-        public PullCommand() : base(CommandName, "Pulls all the project files")
+        public PullCommand() : base(CommandName, "Pulls parameters and wal scripts from the environment")
         {
             var name = new Argument<string>("name", "The asset name. To pull several at once, use '*' at the end, e.g 'MyParam*'.");
-            var environmentName = new Option<string>("--env", "The alias of the environment to pull parameters from.") { Arity = ArgumentArity.ExactlyOne };
+            var environmentName = new Option<string>("--env", "The alias of the environment to pull data from.") { Arity = ArgumentArity.ExactlyOne };
             var assetType = new Option<string?>("--type", "The type of the asset to pull. If not provided, assets from all types will be pulled.") { Arity = ArgumentArity.ZeroOrOne }
                 .FromAmong("wal", "parameter");
 

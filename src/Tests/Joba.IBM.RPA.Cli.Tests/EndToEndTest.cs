@@ -6,34 +6,59 @@ using Xunit.Abstractions;
 namespace Joba.IBM.RPA.Cli.Tests
 {
     [Trait("Category", "e2e")]
-    public class EndToEndTest : IDisposable
+    public class EndToEndTest
     {
         private readonly ILogger logger;
-        private readonly DirectoryInfo workingDirectory;
 
         public EndToEndTest(ITestOutputHelper output)
         {
             logger = new XunitLogger(output);
-            workingDirectory = new DirectoryInfo(System.Environment.CurrentDirectory);
+        }
+
+        [Fact]
+        public async Task PushScriptsWithoutModification()
+        {
+            var workingDirectory = new DirectoryInfo(Path.Combine(System.Environment.CurrentDirectory, "assets/e2e"));
+            ClearWorkingDirectory(workingDirectory);
+            try
+            {
+                var parameters = ReadParameters();
+                await RunAsync($"project new {parameters.ProjectName} -d '{parameters.ProjectDescription}'", workingDirectory);
+                await RunAsync($"env new target --url {parameters.TargetOptions.ApiUrl} --region {parameters.TargetOptions.Region} --userName {parameters.TargetOptions.Username} --tenant {parameters.TargetOptions.TenantCode}", workingDirectory);
+                await RunAsync("push *.wal --env target", workingDirectory);
+            }
+            finally
+            {
+                ClearWorkingDirectory(workingDirectory);
+            }
         }
 
         [Fact]
         public async Task CreateAndDeployProject()
         {
-            ClearWorkingDirectory();
-            //TODO: need to create computer+computergroups+chat since QA by default is empty.
-            var parameters = ReadParameters();
-            await RunAsync($"project new {parameters.ProjectName} -d '{parameters.ProjectDescription}'");
-            await RunAsync($"env new source --url {parameters.SourceOptions.ApiUrl} --region {parameters.SourceOptions.Region} --userName {parameters.SourceOptions.Username} --tenant {parameters.SourceOptions.TenantCode}");
-            await RunAsync($"env new target --url {parameters.TargetOptions.ApiUrl} --region {parameters.TargetOptions.Region} --userName {parameters.TargetOptions.Username} --tenant {parameters.TargetOptions.TenantCode}");
-            await RunAsync($"package source package --url {parameters.PackageOptions.ApiUrl} --region {parameters.PackageOptions.Region} --userName {parameters.PackageOptions.Username} --tenant {parameters.PackageOptions.TenantCode}");
-            await RunAsync("package install Joba*");
-            await RunAsync("pull e2e* --env source");
-            await RunAsync("bot new attended --template attended");
-            await RunAsync($"bot new unattended --template unattended -p:computer-group={parameters.Unattended.ComputerGroup}");
-            await RunAsync($"bot new e2e --template chatbot -p:handle={parameters.Chat.Handle} -p:name=e2e -p:computers={parameters.Chat.Computers}");
+            var workingDirectory = new DirectoryInfo(Path.Combine(System.Environment.CurrentDirectory, "e2e"));
+            workingDirectory.Create();
+            ClearWorkingDirectory(workingDirectory);
+            try
+            {
+                //TODO: need to create computer+computergroups+chat since QA by default is empty.
+                var parameters = ReadParameters();
+                await RunAsync($"project new {parameters.ProjectName} -d '{parameters.ProjectDescription}'", workingDirectory);
+                await RunAsync($"env new source --url {parameters.SourceOptions.ApiUrl} --region {parameters.SourceOptions.Region} --userName {parameters.SourceOptions.Username} --tenant {parameters.SourceOptions.TenantCode}", workingDirectory);
+                await RunAsync($"env new target --url {parameters.TargetOptions.ApiUrl} --region {parameters.TargetOptions.Region} --userName {parameters.TargetOptions.Username} --tenant {parameters.TargetOptions.TenantCode}", workingDirectory);
+                await RunAsync($"package source package --url {parameters.PackageOptions.ApiUrl} --region {parameters.PackageOptions.Region} --userName {parameters.PackageOptions.Username} --tenant {parameters.PackageOptions.TenantCode}", workingDirectory);
+                await RunAsync("package install Joba*", workingDirectory);
+                await RunAsync("pull e2e* --env source", workingDirectory);
+                await RunAsync("bot new attended --template attended", workingDirectory);
+                await RunAsync($"bot new unattended --template unattended -p:computer-group={parameters.Unattended.ComputerGroup}", workingDirectory);
+                await RunAsync($"bot new e2e --template chatbot -p:handle={parameters.Chat.Handle} -p:name=e2e -p:computers={parameters.Chat.Computers}", workingDirectory);
 
-            await RunAsync("deploy target");
+                await RunAsync("deploy target", workingDirectory);
+            }
+            finally
+            {
+                ClearWorkingDirectory(workingDirectory);
+            }
         }
 
         private E2eParameters ReadParameters()
@@ -63,13 +88,13 @@ namespace Joba.IBM.RPA.Cli.Tests
                 System.Environment.GetEnvironmentVariable(variable) ?? throw new InvalidOperationException($"The environment variable '{variable}' is required and was not found.");
         }
 
-        private async Task RunAsync(string arguments)
+        private async Task RunAsync(string arguments, DirectoryInfo workingDirectory)
         {
-            var exitCode = await StartProcessAsync(arguments);
+            var exitCode = await StartProcessAsync(arguments, workingDirectory);
             Assert.True(exitCode >= 0);
         }
 
-        private async Task<int> StartProcessAsync(string arguments)
+        private async Task<int> StartProcessAsync(string arguments, DirectoryInfo workingDirectory)
         {
             logger.LogInformation($"rpa {arguments}");
             arguments = $"{arguments} -v Detailed";
@@ -79,7 +104,8 @@ namespace Joba.IBM.RPA.Cli.Tests
             {
                 UseShellExecute = false,
                 RedirectStandardError = true,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                WorkingDirectory = workingDirectory.FullName
             };
 
             using var process = Process.Start(info) ?? throw new Exception($"Could not start '{info.FileName} {info.Arguments}'");
@@ -99,9 +125,7 @@ namespace Joba.IBM.RPA.Cli.Tests
                 logger.LogError($"Process error: {e.Data}");
         }
 
-        void IDisposable.Dispose() => ClearWorkingDirectory();
-
-        private void ClearWorkingDirectory()
+        private static void ClearWorkingDirectory(DirectoryInfo workingDirectory)
         {
             var rpaDir = new DirectoryInfo(Path.Combine(workingDirectory.FullName, ProjectFile.HiddenDirectoryName));
             if (rpaDir.Exists)

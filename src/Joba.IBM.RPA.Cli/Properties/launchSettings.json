@@ -36,6 +36,10 @@
       "commandName": "Project",
       "commandLineArgs": "pull Assistant* --env prod --type parameter"
     },
+    "rpa push": {
+      "commandName": "Project",
+      "commandLineArgs": "push *.wal -p:timeout=00:10:00 -p:prod=true -v --env prod"
+    },
     "rpa package source joba": {
       "commandName": "Project",
       "commandLineArgs": "package source joba --url default"

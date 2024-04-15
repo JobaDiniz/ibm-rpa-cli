@@ -72,7 +72,7 @@ namespace Joba.IBM.RPA
 
             var tasks = envSettings.Parameters.Select(parameter =>
             {
-                logger.LogInformation("Deploying parameter {Name}", parameter.Name);
+                logger.LogDebug("Deploying parameter {Name}", parameter.Name);
                 return client.Parameter.CreateOrUpdateAsync(parameter.Name, parameter.Value, cancellation);
             }).ToArray();
 

@@ -14,7 +14,7 @@ namespace Joba.IBM.RPA.Cli
                 var name = new Argument<string>("name", description: "The bot name.");
                 var template = new Option<string>("--template", () => "unattended", "The template to use. Depending on the template, different configurations are allowed.")
                     .FromAmong("attended", "chatbot", "unattended", "package", "excel");
-                var properties = new Option<IEnumerable<string>?>(new[] { "--property", "-p" }, $"A key-value pair property to specify specific configurations for each template.") { AllowMultipleArgumentsPerToken = true };
+                var properties = new Option<IEnumerable<string>?>(new[] { "--property", "-p" }, $"A key-value pair property to specify configurations for each template.") { AllowMultipleArgumentsPerToken = true };
 
                 AddArgument(name);
                 AddOption(template);

@@ -36,6 +36,7 @@ namespace Joba.IBM.RPA.Cli
             AddCommand(new EnvironmentCommand());
             AddCommand(new DeployCommand());
             AddCommand(new PullCommand());
+            AddCommand(new PushCommand());
             AddCommand(new PackageCommand());
             AddCommand(new BuildCommand());
             AddCommand(new GitCommand());

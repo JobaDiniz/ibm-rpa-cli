@@ -102,8 +102,8 @@ namespace Joba.IBM.RPA
             ProductVersion = version.ProductVersion;
         }
 
-        internal PublishScript PrepareToPublish(string message, TimeSpan timeout, bool resetIds = false) =>
-            new(resetIds ? null : Id, resetIds ? null : VersionId, Name.WithoutExtension, message, Content.ToString(), ProductVersion?.ToString(), false, Convert.ToInt32(timeout.TotalSeconds), Convert.ToInt32(timeout.TotalSeconds), Convert.ToInt32(timeout.TotalSeconds));
+        internal PublishScript PrepareToPublish(string message, TimeSpan timeout, bool resetIds = false, bool setAsProduction = false) =>
+            new(resetIds ? null : Id, resetIds ? null : VersionId, Name.WithoutExtension, message, Content.ToString(), ProductVersion?.ToString(), setAsProduction, Convert.ToInt32(timeout.TotalSeconds), Convert.ToInt32(timeout.TotalSeconds), Convert.ToInt32(timeout.TotalSeconds));
 
         internal void Save()
         {

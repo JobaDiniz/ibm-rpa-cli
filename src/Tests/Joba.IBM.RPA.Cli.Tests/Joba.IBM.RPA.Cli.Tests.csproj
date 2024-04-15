@@ -81,6 +81,12 @@
     <None Update="assets\CreateProjectJsonFile.rpa.verified.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="assets\e2e\helloworld2.wal">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\e2e\helloworld.wal">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="assets\InstallPackageHandlerShould\ThrowException_WhenWilcardAndVersionIsSpecified\ThrowException_WhenWilcardAndVersionIsSpecified.rpa.json">
       <ParentFile>$([System.String]::Copy('%(FileName)').Split('.')[0])</ParentFile>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
