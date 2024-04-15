@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
+using System.Globalization;
 using System.Reflection;
 
 namespace Joba.IBM.RPA.Cli
@@ -87,7 +88,7 @@ namespace Joba.IBM.RPA.Cli
             context.BindingContext.AddService<IAccountAuthenticatorFactory>(s => new AccountAuthenticatorFactory(
                 s.GetRequiredService<IRpaClientFactory>(), s.GetRequiredService<IRpaHttpClientFactory>()));
             context.BindingContext.AddService<IRpaClientFactory>(s => new RpaClientFactory(
-                context.Console, s.GetRequiredService<IRpaHttpClientFactory>()));
+                context.Console, s.GetRequiredService<IRpaHttpClientFactory>(), CultureInfo.GetCultureInfo("en-US")));
             context.BindingContext.AddService<IDeployService>(s => new DeployService(
                 loggerFactory.CreateLogger<DeployService>(),
                 s.GetRequiredService<IRpaClientFactory>(),

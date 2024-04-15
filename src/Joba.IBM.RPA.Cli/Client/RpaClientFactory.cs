@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Globalization;
+using System.Net.Http.Headers;
 
 namespace Joba.IBM.RPA.Cli
 {
@@ -6,14 +7,16 @@ namespace Joba.IBM.RPA.Cli
     {
         private readonly IConsole console;
         private readonly IRpaHttpClientFactory httpFactory;
+        private readonly CultureInfo culture;
 
-        public RpaClientFactory(IConsole console, IRpaHttpClientFactory httpFactory)
+        public RpaClientFactory(IConsole console, IRpaHttpClientFactory httpFactory, CultureInfo culture)
         {
             this.console = console;
             this.httpFactory = httpFactory;
+            this.culture = culture;
         }
 
-        public IRpaClient CreateFromAddress(Uri address) => new RpaClient(httpFactory.Create(address));
+        public IRpaClient CreateFromAddress(Uri address) => new RpaClient(httpFactory.Create(address), culture);
         IRpaClient IRpaClientFactory.CreateFromRegion(Region region) => ((IRpaClientFactory)this).CreateFromAddress(region.ApiAddress);
 
         IRpaClient IRpaClientFactory.CreateFromPackageSource(PackageSource source)
@@ -22,7 +25,7 @@ namespace Joba.IBM.RPA.Cli
             var sessionEnsurer = new SessionEnsurer(console, authenticatorFactory, source.Session);
             var client = httpFactory.Create(source.Remote.Address, new RenewExpiredSession(sessionEnsurer));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", source.Session.Current.Token);
-            return new RpaClient(client);
+            return new RpaClient(client, culture);
         }
 
         IRpaClient IRpaClientFactory.CreateFromEnvironment(Environment environment)
@@ -31,7 +34,7 @@ namespace Joba.IBM.RPA.Cli
             var sessionEnsurer = new SessionEnsurer(console, authenticatorFactory, environment.Session);
             var client = httpFactory.Create(environment.Remote.Address, new RenewExpiredSession(sessionEnsurer));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", environment.Session.Current.Token);
-            return new RpaClient(client);
+            return new RpaClient(client, culture);
         }
 
         class RenewExpiredSession : IRenewExpiredSession

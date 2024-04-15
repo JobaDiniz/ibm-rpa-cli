@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.CommandLine;
+using System.Globalization;
 using Xunit.Abstractions;
 using static Joba.IBM.RPA.Cli.PackageCommand;
 
@@ -66,7 +67,7 @@ namespace Joba.IBM.RPA.Cli.Tests
                 var credentials = new AccountCredentials(options.TenantCode!.Value, options.UserName!, options.Password!);
                 var console = new Mock<IConsole>();
                 var client = new Mock<IRpaClient>();
-                client.Setup(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(config);
+                client.Setup(c => c.GetConfigurationAsync(It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>())).ReturnsAsync(config);
                 var clientFactory = new Mock<IRpaClientFactory>();
                 clientFactory.Setup(c => c.CreateFromAddress(region.ApiAddress)).Returns(client.Object);
                 clientFactory.Setup(c => c.CreateFromRegion(region)).Returns(client.Object);
@@ -109,7 +110,7 @@ namespace Joba.IBM.RPA.Cli.Tests
                 var credentials = new AccountCredentials(options.TenantCode!.Value, options.UserName!, options.Password!);
                 var console = new Mock<IConsole>();
                 var client = new Mock<IRpaClient>();
-                client.Setup(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(config);
+                client.Setup(c => c.GetConfigurationAsync(It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>())).ReturnsAsync(config);
                 var clientFactory = new Mock<IRpaClientFactory>();
                 clientFactory.Setup(c => c.CreateFromAddress(region.ApiAddress)).Returns(client.Object);
                 clientFactory.Setup(c => c.CreateFromRegion(region)).Returns(client.Object);
@@ -150,7 +151,7 @@ namespace Joba.IBM.RPA.Cli.Tests
                 var credentials = new AccountCredentials(options.TenantCode!.Value, options.UserName!, options.Password!);
                 var console = new Mock<IConsole>();
                 var client = new Mock<IRpaClient>();
-                client.Setup(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(config);
+                client.Setup(c => c.GetConfigurationAsync(It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>())).ReturnsAsync(config);
                 var clientFactory = new Mock<IRpaClientFactory>();
                 clientFactory.Setup(c => c.CreateFromAddress(region.ApiAddress)).Returns(client.Object);
                 clientFactory.Setup(c => c.CreateFromRegion(region)).Returns(client.Object);

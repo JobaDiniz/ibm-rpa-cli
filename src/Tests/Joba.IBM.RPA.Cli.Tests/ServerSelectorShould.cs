@@ -1,5 +1,6 @@
 ﻿using Moq;
 using System.CommandLine;
+using System.Globalization;
 
 namespace Joba.IBM.RPA.Cli.Tests
 {
@@ -15,7 +16,7 @@ namespace Joba.IBM.RPA.Cli.Tests
             var server = new ServerConfig { Version = new Version("20.12.0"), Deployment = DeploymentOption.SaaS, AuthenticationMethod = AuthenticationMethod.WDG };
             var console = new Mock<IConsole>();
             var client = new Mock<IRpaClient>();
-            client.Setup(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(server);
+            client.Setup(c => c.GetConfigurationAsync(It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>())).ReturnsAsync(server);
             var clientFactory = new Mock<IRpaClientFactory>();
             clientFactory.Setup(c => c.CreateFromAddress(It.Is<Uri>(u => u.AbsoluteUri == url))).Returns(client.Object);
             var project = new Mock<IProject>();
@@ -35,7 +36,7 @@ namespace Joba.IBM.RPA.Cli.Tests
             var server = new ServerConfig { Version = RpaCommand.SupportedServerVersion, Deployment = new DeploymentOption("not-supported"), AuthenticationMethod = AuthenticationMethod.WDG };
             var console = new Mock<IConsole>();
             var client = new Mock<IRpaClient>();
-            client.Setup(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(server);
+            client.Setup(c => c.GetConfigurationAsync(It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>())).ReturnsAsync(server);
             var clientFactory = new Mock<IRpaClientFactory>();
             clientFactory.Setup(c => c.CreateFromAddress(It.Is<Uri>(u => u.AbsoluteUri == url))).Returns(client.Object);
             var project = new Mock<IProject>();
@@ -55,7 +56,7 @@ namespace Joba.IBM.RPA.Cli.Tests
             var server = new ServerConfig { Version = RpaCommand.SupportedServerVersion, Deployment = DeploymentOption.SaaS, AuthenticationMethod = new AuthenticationMethod("not-supported") };
             var console = new Mock<IConsole>();
             var client = new Mock<IRpaClient>();
-            client.Setup(c => c.GetConfigurationAsync(It.IsAny<CancellationToken>())).ReturnsAsync(server);
+            client.Setup(c => c.GetConfigurationAsync(It.IsAny<CultureInfo>(), It.IsAny<CancellationToken>())).ReturnsAsync(server);
             var clientFactory = new Mock<IRpaClientFactory>();
             clientFactory.Setup(c => c.CreateFromAddress(It.Is<Uri>(u => u.AbsoluteUri == url))).Returns(client.Object);
             var project = new Mock<IProject>();

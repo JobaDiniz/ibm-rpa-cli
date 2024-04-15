@@ -1,11 +1,12 @@
 ﻿using Joba.IBM.RPA.Server;
+using System.Globalization;
 
 namespace Joba.IBM.RPA
 {
     public interface IRpaClient : IDisposable
     {
         Uri Address { get; }
-        Task<ServerConfig> GetConfigurationAsync(CancellationToken cancellation);
+        Task<ServerConfig> GetConfigurationAsync(CultureInfo culture, CancellationToken cancellation);
         IAccountResource Account { get; }
         IScriptResource Script { get; }
         IParameterResource Parameter { get; }

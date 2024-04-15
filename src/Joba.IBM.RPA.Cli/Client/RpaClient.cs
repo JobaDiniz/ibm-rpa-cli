@@ -25,22 +25,22 @@ namespace Joba.IBM.RPA.Cli
         }
 
         private readonly HttpClient client;
-        public RpaClient(HttpClient client)
+        public RpaClient(HttpClient client, CultureInfo culture)
         {
             this.client = client;
             if (client.BaseAddress == null)
                 throw new ArgumentException($"The '{nameof(client)}' needs to have '{nameof(client.BaseAddress)}' set");
 
-            Account = new AccountResource(client);
-            ScriptVersion = new ScriptVersionResource(client);
-            Script = new ScriptResource(client, ScriptVersion);
-            Parameter = new ParameterResource(client);
-            Project = new ProjectResource(client);
-            Bot = new BotResource(client);
-            Computer = new ComputerResource(client);
-            ComputerGroup = new ComputerGroupResource(client);
-            Chat = new ChatResource(client);
-            ChatMapping = new ChatMappingResource(client);
+            Account = new AccountResource(client, culture);
+            ScriptVersion = new ScriptVersionResource(client, culture);
+            Script = new ScriptResource(client, ScriptVersion, culture);
+            Parameter = new ParameterResource(client, culture);
+            Project = new ProjectResource(client, culture);
+            Bot = new BotResource(client, culture);
+            Computer = new ComputerResource(client, culture);
+            ComputerGroup = new ComputerGroupResource(client, culture);
+            Chat = new ChatResource(client, culture);
+            ChatMapping = new ChatMappingResource(client, culture);
         }
 
         public Uri Address => client.BaseAddress!;
@@ -55,28 +55,27 @@ namespace Joba.IBM.RPA.Cli
         public IChatResource Chat { get; }
         public IChatMappingResource ChatMapping { get; }
 
-        public async Task<ServerConfig> GetConfigurationAsync(CancellationToken cancellation) =>
-            await client.GetFromJsonAsync<ServerConfig>($"{CultureInfo.CurrentCulture.Name}/configuration", SerializerOptions, cancellation);
+        public async Task<ServerConfig> GetConfigurationAsync(CultureInfo culture, CancellationToken cancellation) =>
+            await client.GetFromJsonAsync<ServerConfig>($"{culture.Name}/configuration", SerializerOptions, cancellation);
 
-        public void Dispose()
-        {
-            client?.Dispose();
-        }
+        public void Dispose() => client?.Dispose();
 
         class ScriptResource : IScriptResource
         {
             private readonly HttpClient client;
             private readonly IScriptVersionResource versionResource;
+            private readonly CultureInfo culture;
 
-            public ScriptResource(HttpClient client, IScriptVersionResource versionResource)
+            public ScriptResource(HttpClient client, IScriptVersionResource versionResource, CultureInfo culture)
             {
                 this.client = client;
                 this.versionResource = versionResource;
+                this.culture = culture;
             }
 
             public async Task<ScriptVersion?> GetLatestVersionAsync(Guid scriptId, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/script/{scriptId}/version?offset=0&limit=1&orderBy=version&asc=false&include=Script";
+                var url = $"{culture.Name}/script/{scriptId}/version?offset=0&limit=1&orderBy=version&asc=false&include=Script";
                 var response = await client.GetFromJsonAsync<PagedResponse<ScriptVersionBuilder>>(url, SerializerOptions, cancellation);
                 if (response.Results.Length == 0)
                     return null;
@@ -88,7 +87,7 @@ namespace Joba.IBM.RPA.Cli
 
             public async Task<ScriptVersion?> GetLatestVersionAsync(string scriptName, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/script?offset=0&limit=20&search={scriptName}&orderBy=modificationDate&asc=false";
+                var url = $"{culture.Name}/script?offset=0&limit=20&search={scriptName}&orderBy=modificationDate&asc=false";
                 var response = await client.GetFromJsonAsync<PagedResponse<Script>>(url, SerializerOptions, cancellation);
                 if (response.Results.Length == 0)
                     return null;
@@ -102,14 +101,14 @@ namespace Joba.IBM.RPA.Cli
 
             public async Task<IEnumerable<Script>> SearchAsync(string scriptName, int limit, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/script?offset=0&limit={limit}&search={scriptName}&orderBy=name&asc=true";
+                var url = $"{culture.Name}/script?offset=0&limit={limit}&search={scriptName}&orderBy=name&asc=true";
                 var response = await client.GetFromJsonAsync<PagedResponse<Script>>(url, SerializerOptions, cancellation);
                 return response.Results;
             }
 
             public async Task<ScriptVersion?> GetAsync(string scriptName, WalVersion version, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/script/{scriptName}/info?versionId={version}&excludeContent=false";
+                var url = $"{culture.Name}/script/{scriptName}/info?versionId={version}&excludeContent=false";
                 var response = await client.GetAsync(url, cancellation);
                 if (response.StatusCode == HttpStatusCode.NotFound)
                     return null;
@@ -124,7 +123,7 @@ namespace Joba.IBM.RPA.Cli
 
             public async Task<ScriptVersion> PublishAsync(PublishScript script, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/script/publish";
+                var url = $"{culture.Name}/script/publish";
                 var response = await client.PutAsJsonAsync(url, script, SerializerOptions, cancellation);
                 await response.ThrowWhenUnsuccessfulAsync(cancellation);
 
@@ -139,12 +138,17 @@ namespace Joba.IBM.RPA.Cli
         class ScriptVersionResource : IScriptVersionResource
         {
             private readonly HttpClient client;
+            private readonly CultureInfo culture;
 
-            public ScriptVersionResource(HttpClient client) => this.client = client;
+            public ScriptVersionResource(HttpClient client, CultureInfo culture)
+            {
+                this.client = client;
+                this.culture = culture;
+            }
 
             public async Task<string> GetContentAsync(Guid scriptVersionId, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/script-version/{scriptVersionId}/content";
+                var url = $"{culture.Name}/script-version/{scriptVersionId}/content";
                 return await client.GetStringAsync(url, cancellation);
             }
         }
@@ -152,8 +156,13 @@ namespace Joba.IBM.RPA.Cli
         class AccountResource : IAccountResource
         {
             private readonly HttpClient client;
+            private readonly CultureInfo culture;
 
-            public AccountResource(HttpClient client) => this.client = client;
+            public AccountResource(HttpClient client, CultureInfo culture)
+            {
+                this.client = client;
+                this.culture = culture;
+            }
 
             public async Task<CreatedSession> AuthenticateAsync(int tenantCode, string userName, string password, CancellationToken cancellation)
             {
@@ -172,7 +181,7 @@ namespace Joba.IBM.RPA.Cli
                     { "grant_type", "password" },
                     { "username", userName },
                     { "password", password },
-                    { "culture", CultureInfo.CurrentCulture.Name },
+                    { "culture", culture.Name },
                 };
 
                 var content = new FormUrlEncodedContent(parameters);
@@ -194,7 +203,7 @@ namespace Joba.IBM.RPA.Cli
 
             public async Task<IEnumerable<Tenant>> FetchTenantsAsync(string userName, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/account/tenant";
+                var url = $"{culture.Name}/account/tenant";
                 var model = new { UserName = userName };
 
                 var response = await client.PostAsJsonAsync(url, model, SerializerOptions, cancellation);
@@ -207,12 +216,17 @@ namespace Joba.IBM.RPA.Cli
         class ParameterResource : IParameterResource
         {
             private readonly HttpClient client;
+            private readonly CultureInfo culture;
 
-            public ParameterResource(HttpClient client) => this.client = client;
+            public ParameterResource(HttpClient client, CultureInfo culture)
+            {
+                this.client = client;
+                this.culture = culture;
+            }
 
             public async Task<IEnumerable<Parameter>> SearchAsync(string parameterName, int limit, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/parameter?offset=0&limit=50&search={parameterName}&orderBy=id&asc=true";
+                var url = $"{culture.Name}/parameter?offset=0&limit=50&search={parameterName}&orderBy=id&asc=true";
                 var response = await client.GetFromJsonAsync<PagedResponse<Parameter>>(url, SerializerOptions, cancellation);
                 return response.Results;
             }
@@ -223,14 +237,14 @@ namespace Joba.IBM.RPA.Cli
                     throw new ArgumentException("Parameters cannot be an empty array", nameof(parameters));
 
                 var ids = string.Join(", ", parameters);
-                var url = $"{CultureInfo.CurrentCulture.Name}/parameter/values?ids={Uri.EscapeDataString(ids)}";
+                var url = $"{culture.Name}/parameter/values?ids={Uri.EscapeDataString(ids)}";
                 var response = await client.GetFromJsonAsync<IEnumerable<Parameter>>(url, SerializerOptions, cancellation);
                 return response ?? throw new Exception("Could not convert the response");
             }
 
             public async Task<Parameter?> GetAsync(string parameterName, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/parameter/value";
+                var url = $"{culture.Name}/parameter/value";
                 var body = new { Id = parameterName };
                 var response = await client.PostAsJsonAsync(url, body, SerializerOptions, cancellation);
                 if (response.StatusCode == HttpStatusCode.NotFound)
@@ -243,7 +257,7 @@ namespace Joba.IBM.RPA.Cli
 
             public async Task<Parameter> CreateAsync(string parameterName, string value, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/parameter";
+                var url = $"{culture.Name}/parameter";
                 var parameter = new Parameter(parameterName, value);
                 var response = await client.PostAsJsonAsync(url, parameter, SerializerOptions, cancellation);
                 await response.ThrowWhenUnsuccessfulAsync(cancellation);
@@ -252,7 +266,7 @@ namespace Joba.IBM.RPA.Cli
 
             public async Task<Parameter> UpdateAsync(string parameterName, string value, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/parameter";
+                var url = $"{culture.Name}/parameter";
                 var parameter = new Parameter(parameterName, value);
                 var response = await client.PutAsJsonAsync(url, parameter, SerializerOptions, cancellation);
                 await response.ThrowWhenUnsuccessfulAsync(cancellation);
@@ -272,8 +286,13 @@ namespace Joba.IBM.RPA.Cli
         class ProjectResource : IProjectResource
         {
             private readonly HttpClient client;
+            private readonly CultureInfo culture;
 
-            public ProjectResource(HttpClient client) => this.client = client;
+            public ProjectResource(HttpClient client, CultureInfo culture)
+            {
+                this.client = client;
+                this.culture = culture;
+            }
 
             public async Task<Project> CreateOrUpdateAsync(string name, string description, CancellationToken cancellation)
             {
@@ -289,14 +308,14 @@ namespace Joba.IBM.RPA.Cli
 
             private async Task<IEnumerable<Project>> SearchAsync(string name, int limit, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/project?offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
+                var url = $"{culture.Name}/project?offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
                 var response = await client.GetFromJsonAsync<PagedResponse<Project>>(url, SerializerOptions, cancellation);
                 return response.Results;
             }
 
             private async Task<Project> CreateAsync(string name, UniqueId uniqueId, string description, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/project";
+                var url = $"{culture.Name}/project";
                 var project = new { Name = name, Description = description, TechnicalName = uniqueId };
                 var response = await client.PostAsJsonAsync(url, project, SerializerOptions, cancellation);
                 await response.ThrowWhenUnsuccessfulAsync(cancellation);
@@ -305,7 +324,7 @@ namespace Joba.IBM.RPA.Cli
 
             private async Task<Project> UpdateAsync(Guid id, string name, string description, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/project/{id}";
+                var url = $"{culture.Name}/project/{id}";
                 var project = new { Name = name, Description = description };
                 var response = await client.PutAsJsonAsync(url, project, SerializerOptions, cancellation);
                 await response.ThrowWhenUnsuccessfulAsync(cancellation);
@@ -316,8 +335,13 @@ namespace Joba.IBM.RPA.Cli
         class BotResource : IBotResource
         {
             private readonly HttpClient client;
+            private readonly CultureInfo culture;
 
-            public BotResource(HttpClient client) => this.client = client;
+            public BotResource(HttpClient client, CultureInfo culture)
+            {
+                this.client = client;
+                this.culture = culture;
+            }
 
             public async Task CreateOrUpdateAsync(CreateBotRequest bot, CancellationToken cancellation)
             {
@@ -330,7 +354,7 @@ namespace Joba.IBM.RPA.Cli
 
             private async Task<BotSearchResponse> UpdateAsync(Guid id, CreateBotRequest bot, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/project/{bot.ProjectId}/bot/{id}";
+                var url = $"{culture.Name}/project/{bot.ProjectId}/bot/{id}";
                 var response = await client.PutAsJsonAsync(url, bot, SerializerOptions, cancellation);
                 await response.ThrowWhenUnsuccessfulAsync(cancellation);
                 return await response.Content.ReadFromJsonAsync<BotSearchResponse>(SerializerOptions, cancellation) ?? throw new Exception("Could not convert the response");
@@ -338,7 +362,7 @@ namespace Joba.IBM.RPA.Cli
 
             private async Task<BotSearchResponse> CreateAsync(CreateBotRequest bot, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/project/{bot.ProjectId}/bot";
+                var url = $"{culture.Name}/project/{bot.ProjectId}/bot";
                 var response = await client.PostAsJsonAsync(url, bot, SerializerOptions, cancellation);
                 await response.ThrowWhenUnsuccessfulAsync(cancellation);
                 return await response.Content.ReadFromJsonAsync<BotSearchResponse>(SerializerOptions, cancellation) ?? throw new Exception("Could not convert the response");
@@ -346,7 +370,7 @@ namespace Joba.IBM.RPA.Cli
 
             private async Task<IEnumerable<BotSearchResponse>> SearchAsync(Guid projectId, string name, int limit, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/project/{projectId}/bot?offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
+                var url = $"{culture.Name}/project/{projectId}/bot?offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
                 var response = await client.GetFromJsonAsync<PagedResponse<BotSearchResponse>>(url, SerializerOptions, cancellation);
                 return response.Results;
             }
@@ -357,12 +381,17 @@ namespace Joba.IBM.RPA.Cli
         class ComputerResource : IComputerResource
         {
             private readonly HttpClient client;
+            private readonly CultureInfo culture;
 
-            public ComputerResource(HttpClient client) => this.client = client;
+            public ComputerResource(HttpClient client, CultureInfo culture)
+            {
+                this.client = client;
+                this.culture = culture;
+            }
 
             async Task<IEnumerable<Computer>> IComputerResource.SearchAsync(string? name, int limit, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/computer?offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
+                var url = $"{culture.Name}/computer?offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
                 var response = await client.GetFromJsonAsync<PagedResponse<Computer>>(url, SerializerOptions, cancellation);
                 return response.Results;
             }
@@ -371,8 +400,13 @@ namespace Joba.IBM.RPA.Cli
         class ComputerGroupResource : IComputerGroupResource
         {
             private readonly HttpClient client;
+            private readonly CultureInfo culture;
 
-            public ComputerGroupResource(HttpClient client) => this.client = client;
+            public ComputerGroupResource(HttpClient client, CultureInfo culture)
+            {
+                this.client = client;
+                this.culture = culture;
+            }
 
             public async Task<ComputerGroup> GetAsync(string name, CancellationToken cancellation)
             {
@@ -382,7 +416,7 @@ namespace Joba.IBM.RPA.Cli
 
             private async Task<IEnumerable<ComputerGroup>> SearchAsync(string name, int limit, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/group?offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
+                var url = $"{culture.Name}/group?offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
                 var response = await client.GetFromJsonAsync<PagedResponse<ComputerGroup>>(url, SerializerOptions, cancellation);
                 return response.Results;
             }
@@ -391,8 +425,13 @@ namespace Joba.IBM.RPA.Cli
         class ChatMappingResource : IChatMappingResource
         {
             private readonly HttpClient client;
+            private readonly CultureInfo culture;
 
-            public ChatMappingResource(HttpClient client) => this.client = client;
+            public ChatMappingResource(HttpClient client, CultureInfo culture)
+            {
+                this.client = client;
+                this.culture = culture;
+            }
 
             async Task IChatMappingResource.CreateOrUpdateAsync(CreateChatMappingRequest mapping, CancellationToken cancellation)
             {
@@ -405,14 +444,14 @@ namespace Joba.IBM.RPA.Cli
 
             private async Task<IEnumerable<ChatMapping>> SearchAsync(string name, int limit, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/bot-mapping?include=Bot&offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
+                var url = $"{culture.Name}/bot-mapping?include=Bot&offset=0&limit={limit}&search={name}&orderBy=name&asc=true";
                 var response = await client.GetFromJsonAsync<PagedResponse<ChatMappingSearchResponse>>(url, SerializerOptions, cancellation);
                 return response.Results.Select(r => new ChatMapping(r.Id, r.ChatId, r.Name, r.Chat.Handle)).ToArray();
             }
 
             private async Task<ChatMappingSearchResponse> CreateAsync(CreateChatMappingRequest mapping, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/bot-mapping";
+                var url = $"{culture.Name}/bot-mapping";
                 var response = await client.PostAsJsonAsync(url, mapping, SerializerOptions, cancellation);
                 await response.ThrowWhenUnsuccessfulAsync(cancellation);
                 return await response.Content.ReadFromJsonAsync<ChatMappingSearchResponse>(SerializerOptions, cancellation) ?? throw new Exception("Could not convert the response");
@@ -420,7 +459,7 @@ namespace Joba.IBM.RPA.Cli
 
             private async Task<ChatMappingSearchResponse> UpdateAsync(Guid id, CreateChatMappingRequest mapping, CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/bot-mapping/{id}";
+                var url = $"{culture.Name}/bot-mapping/{id}";
                 var response = await client.PutAsJsonAsync(url, mapping, SerializerOptions, cancellation);
                 await response.ThrowWhenUnsuccessfulAsync(cancellation);
                 return await response.Content.ReadFromJsonAsync<ChatMappingSearchResponse>(SerializerOptions, cancellation) ?? throw new Exception("Could not convert the response");
@@ -432,12 +471,17 @@ namespace Joba.IBM.RPA.Cli
         class ChatResource : IChatResource
         {
             private readonly HttpClient client;
+            private readonly CultureInfo culture;
 
-            public ChatResource(HttpClient client) => this.client = client;
+            public ChatResource(HttpClient client, CultureInfo culture)
+            {
+                this.client = client;
+                this.culture = culture;
+            }
 
             async Task<IEnumerable<Chat>> IChatResource.GetAllAsync(CancellationToken cancellation)
             {
-                var url = $"{CultureInfo.CurrentCulture.Name}/bot/dropdown?filterTenant=true";
+                var url = $"{culture.Name}/bot/dropdown?filterTenant=true";
                 var chats = await client.GetFromJsonAsync<IEnumerable<Chat>>(url, SerializerOptions, cancellation);
                 return chats ?? throw new Exception("Could not convert the response");
             }

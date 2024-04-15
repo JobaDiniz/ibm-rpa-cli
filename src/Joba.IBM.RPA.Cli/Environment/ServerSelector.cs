@@ -1,4 +1,6 @@
-﻿namespace Joba.IBM.RPA.Cli
+﻿using System.Globalization;
+
+namespace Joba.IBM.RPA.Cli
 {
     internal class ServerSelector
     {
@@ -20,7 +22,7 @@
             address = address.IsDefined ? address : SelectServerAddress();
             using var client = clientFactory.CreateFromAddress(address.ToUri());
 
-            var server = await client.GetConfigurationAsync(cancellation);
+            var server = await client.GetConfigurationAsync(CultureInfo.GetCultureInfo("en-US"), cancellation);
             server.EnsureValid(supportedServerVersion);
 
             return server;
