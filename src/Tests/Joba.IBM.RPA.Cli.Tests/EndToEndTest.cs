@@ -97,7 +97,7 @@ namespace Joba.IBM.RPA.Cli.Tests
         private async Task<int> StartProcessAsync(string arguments, DirectoryInfo workingDirectory)
         {
             logger.LogInformation($"rpa {arguments}");
-            arguments = $"{arguments} -v Detailed";
+            arguments = $"{arguments} -v Diagnostic";
             var envVarName = "RPA_EXECUTABLE_PATH";
             var path = System.Environment.GetEnvironmentVariable(envVarName) ?? throw new InvalidOperationException($"The environment variable {envVarName} was not set.");
             var info = new ProcessStartInfo(Path.GetFullPath(path), arguments)

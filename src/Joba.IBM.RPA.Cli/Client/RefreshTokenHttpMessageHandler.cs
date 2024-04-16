@@ -8,10 +8,7 @@ namespace Joba.IBM.RPA.Cli
         private readonly IRenewExpiredSession sessionRenewal;
 
         public RefreshTokenHttpMessageHandler(IRenewExpiredSession sessionRenewal, HttpMessageHandler innerHandler)
-            : base(innerHandler)
-        {
-            this.sessionRenewal = sessionRenewal;
-        }
+            : base(innerHandler) => this.sessionRenewal = sessionRenewal;
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellation)
         {

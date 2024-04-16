@@ -24,7 +24,6 @@ namespace Joba.IBM.RPA.Cli
         {
             var handler = new ThrottlingHttpMessageHandler(MaxParallelism, CreateUserAgentHandler(logger));
             var client = new HttpClient(handler) { BaseAddress = address };
-            ApplyDefaultRequestHeaders(client);
             return client;
         }
 
@@ -33,23 +32,19 @@ namespace Joba.IBM.RPA.Cli
             var refreshTokenHandler = new RefreshTokenHttpMessageHandler(sessionRenewal, CreateUserAgentHandler(logger));
             var handler = new ThrottlingHttpMessageHandler(MaxParallelism, refreshTokenHandler);
             var client = new HttpClient(handler) { BaseAddress = address };
-            ApplyDefaultRequestHeaders(client);
             return client;
-        }
-
-        private static void ApplyDefaultRequestHeaders(HttpClient client)
-        {
-            //TODO: invalid formats
-            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            //client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(RpaCommand.CommandName, RpaCommand.AssemblyVersion));
-            //client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(System.Environment.OSVersion.ToString()));
-            //client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(System.Environment.MachineName));
         }
 
         private static HttpMessageHandler CreatePolicyHandler(ILogger logger)
         {
             var policy = HttpPolicyExtensions.HandleTransientHttpError()
                 .WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(2), 5));
+
+            return new PolicyHttpMessageHandler(policy) { InnerHandler = CreateLogHandler(logger) };
+        }
+
+        private static HttpClientHandler CreateCoreHandler(ILogger logger)
+        {
             var coreHandler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (requestMessage, certificate, chain, sslPolicyErrors) =>
@@ -67,7 +62,7 @@ namespace Joba.IBM.RPA.Cli
                     return true; //TODO: add an option to allow users to opt-in to disregard certificate issues.
                 }
             };
-            return new PolicyHttpMessageHandler(policy) { InnerHandler = coreHandler };
+            return coreHandler;
         }
 
         private static HttpMessageHandler CreateUserAgentHandler(ILogger logger)
@@ -75,5 +70,7 @@ namespace Joba.IBM.RPA.Cli
             var pollyHandler = CreatePolicyHandler(logger);
             return new UserAgentHttpMessageHandler(pollyHandler);
         }
+
+        private static HttpMessageHandler CreateLogHandler(ILogger logger) => new LogMessageHandler(logger, CreateCoreHandler(logger));
     }
 }
