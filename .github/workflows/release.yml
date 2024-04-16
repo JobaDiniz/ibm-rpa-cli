@@ -4,6 +4,46 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      Url:
+        description: The target environment API URL
+        required: true
+        default: https://ibmrpaqa1api.rpa.ibm.com/v1.0/
+        type: string
+      Region:
+        description: The target environment Region
+        required: true
+        default: QA2_IBMRPA
+        type: string
+      Tenant:
+        description: The target environment Tenant
+        required: true
+        default: 5000
+        type: number
+      ComputerGroup:
+        description: The target computer group name for unattended deployment
+        required: true
+        default: C16472V1
+        type: string  
+      ChatHandle:
+        description: The target chat handle for chatbot deployment
+        required: true
+        default: ibmrpaqa1wdgchatintegration
+        type: string  
+      ChatComputers:
+        description: The target comma-separated computers for chatbot deployment
+        required: true
+        default: C16472V1
+        type: string
+      Username:
+        description: The target environment Username
+        required: true
+        type: string
+      Password:
+        description: The target environment Password
+        required: true
+        type: string
 
 jobs:
   release:
@@ -33,20 +73,21 @@ jobs:
     - name: e2e tests
       run: dotnet test ./src/Tests/Joba.IBM.RPA.Cli.Tests --filter "Category=e2e" --verbosity normal
       env:
+        # read more about ternary expressions here: https://docs.github.com/en/actions/learn-github-actions/expressions#example
         RPA_EXECUTABLE_PATH: ${{github.workspace}}/publish/rpa.exe
         E2E_SOURCE_URL: ${{ vars.E2E_SOURCE_URL }}
         E2E_SOURCE_REGION: ${{ vars.E2E_SOURCE_REGION }}
         E2E_SOURCE_TENANT: ${{ vars.E2E_SOURCE_TENANT }}
         E2E_SOURCE_USERNAME: ${{ vars.E2E_SOURCE_USERNAME }}
         RPA_SECRET_source: ${{ secrets.DEV_TENANT_PASSWORD }}
-        E2E_TARGET_URL: ${{ vars.E2E_TARGET_URL }}
-        E2E_TARGET_REGION: ${{ vars.E2E_TARGET_REGION }}
-        E2E_TARGET_TENANT: ${{ vars.E2E_TARGET_TENANT }}
-        E2E_TARGET_USERNAME: ${{ vars.E2E_TARGET_USERNAME }}
-        E2E_TARGET_COMPUTERGROUP: ${{ vars.E2E_TARGET_COMPUTERGROUP }}
-        E2E_TARGET_CHAT_HANDLE: ${{ vars.E2E_TARGET_CHAT_HANDLE }}
-        E2E_TARGET_CHAT_COMPUTERS: ${{ vars.E2E_TARGET_CHAT_COMPUTERS }}
-        RPA_SECRET_target: ${{ secrets.QA_TENANT_PASSWORD }}
+        E2E_TARGET_URL: ${{ inputs && inputs.Url || vars.E2E_TARGET_URL }}
+        E2E_TARGET_REGION: ${{ inputs && inputs.Region || vars.E2E_TARGET_REGION }}
+        E2E_TARGET_TENANT: ${{ inputs && inputs.Tenant || vars.E2E_TARGET_TENANT }}
+        E2E_TARGET_USERNAME: ${{ inputs && inputs.Username || vars.E2E_TARGET_USERNAME }}
+        E2E_TARGET_COMPUTERGROUP: ${{ inputs && inputs.ComputerGroup || vars.E2E_TARGET_COMPUTERGROUP }}
+        E2E_TARGET_CHAT_HANDLE: ${{ inputs && inputs.ChatHandle || vars.E2E_TARGET_CHAT_HANDLE }}
+        E2E_TARGET_CHAT_COMPUTERS: ${{ inputs && inputs.ChatComputers || vars.E2E_TARGET_CHAT_COMPUTERS }}
+        RPA_SECRET_target: ${{ inputs && inputs.Password || secrets.QA_TENANT_PASSWORD }}
         E2E_PACKAGE_URL: ${{ vars.E2E_PACKAGE_URL }}
         E2E_PACKAGE_REGION: ${{ vars.E2E_PACKAGE_REGION }}
         E2E_PACKAGE_TENANT: ${{ vars.E2E_PACKAGE_TENANT }}
