@@ -4,6 +4,46 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      Url:
+        description: The target environment API URL
+        required: true
+        default: https://ibmrpaqa1api.rpa.ibm.com/v1.0/
+        type: string
+      Region:
+        description: The target environment Region
+        required: true
+        default: QA2_IBMRPA
+        type: string
+      Tenant:
+        description: The target environment Tenant
+        required: true
+        default: 5000
+        type: number
+      ComputerGroup:
+        description: The target computer group name for unattended deployment
+        required: true
+        default: C16472V1
+        type: string  
+      ChatHandle:
+        description: The target chat handle for chatbot deployment
+        required: true
+        default: ibmrpaqa1wdgchatintegration
+        type: string  
+      ChatComputers:
+        description: The target comma-separated computers for chatbot deployment
+        required: true
+        default: C16472V1
+        type: string
+      Username:
+        description: The target environment Username
+        required: true
+        type: string
+      Password:
+        description: The target environment Password
+        required: true
+        type: string
 
 jobs:
   release:

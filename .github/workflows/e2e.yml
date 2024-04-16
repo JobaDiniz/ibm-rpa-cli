@@ -6,7 +6,7 @@ on:
       Url:
         description: The target environment API URL
         required: true
-        default: https://ibmrpaqa2api.wdgautomation.com/v1.0/
+        default: https://ibmrpaqa1api.rpa.ibm.com/v1.0/
         type: string
       Region:
         description: The target environment Region
@@ -21,17 +21,17 @@ on:
       ComputerGroup:
         description: The target computer group name for unattended deployment
         required: true
-        default: CHID1
+        default: C16472V1
         type: string  
       ChatHandle:
         description: The target chat handle for chatbot deployment
         required: true
-        default: ibmrpaqa2wdgchatintegration
+        default: ibmrpaqa1wdgchatintegration
         type: string  
       ChatComputers:
         description: The target comma-separated computers for chatbot deployment
         required: true
-        default: CHID1
+        default: C16472V1
         type: string
       Username:
         description: The target environment Username
