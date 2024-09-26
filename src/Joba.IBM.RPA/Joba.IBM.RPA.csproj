@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -16,11 +16,11 @@
 	  <_Parameter1>$(AssemblyName).Tests</_Parameter1>
 	</AssemblyAttribute>
 	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+		<_Parameter1>$(AssemblyName).Cli.Tests</_Parameter1>
+	</AssemblyAttribute>
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
 	  <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
 	</AssemblyAttribute>
-	  <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-		  <_Parameter1>Joba.IBM.RPA.Cli.Tests</_Parameter1>
-	  </AssemblyAttribute>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Snippets\InjectDependencies.definitions.snippet" />

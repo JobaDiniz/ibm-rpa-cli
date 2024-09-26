@@ -1,16 +1,13 @@
 ﻿using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace Joba.IBM.RPA
 {
     internal sealed partial class WalAnalyzer
     {
-        private readonly WalParser parser = new WalParser();
+        private readonly WalParser parser = new();
 
-        internal WalAnalyzer(WalFile wal)
-        {
-            Lines = parser.Parse(wal.Content);
-        }
+        internal WalAnalyzer(WalFile wal) : this(wal.Content) { }
+        internal WalAnalyzer(WalContent content) => Lines = parser.Parse(content);
 
         internal WalLines Lines { get; }
 

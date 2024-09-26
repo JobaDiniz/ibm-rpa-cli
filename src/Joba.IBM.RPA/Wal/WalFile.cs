@@ -183,7 +183,7 @@ namespace Joba.IBM.RPA
         }
     }
 
-    public struct WalContent
+    public readonly struct WalContent
     {
         private readonly string content;
 
@@ -194,7 +194,7 @@ namespace Joba.IBM.RPA
         }
 
         public static WalContent Build(IEnumerable<string> lines) =>
-            new WalContent(string.Join(System.Environment.NewLine, lines));
+            new (string.Join(System.Environment.NewLine, lines));
 
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
@@ -209,7 +209,7 @@ namespace Joba.IBM.RPA
         public static bool operator !=(WalContent left, WalContent right) => !(left == right);
     }
 
-    public struct WalVersion : IFormattable
+    public readonly struct WalVersion : IFormattable
     {
         private readonly int version;
 
@@ -238,7 +238,7 @@ namespace Joba.IBM.RPA
         public static bool operator <=(WalVersion left, WalVersion right) => left.version <= right.version;
     }
 
-    public struct WalFileName
+    public readonly struct WalFileName
     {
         private readonly string name;
 
