@@ -39,8 +39,10 @@ namespace Joba.IBM.RPA.Cli
                 builder.AddMiddleware(async (context, next) =>
                 {
                     // docker run -d --name jaeger -p 6831:6831/udp -p 5778:5778 -p 16686:16686 jaegertracing/all-in-one:1.6
+                    var resourceBuilder = ResourceBuilder.CreateEmpty();
+                    resourceBuilder.AddService(RpaCommand.ServiceName, serviceVersion: RpaCommand.AssemblyVersion);
                     using var _ = Sdk.CreateTracerProviderBuilder()
-                    .ConfigureResource(r => r.AddService(RpaCommand.ServiceName, serviceVersion: RpaCommand.AssemblyVersion))
+                    .SetResourceBuilder(resourceBuilder)
                     .AddHttpClientInstrumentation()
                     .AddSource(RpaCommand.AssemblyName)
                     .Build();
