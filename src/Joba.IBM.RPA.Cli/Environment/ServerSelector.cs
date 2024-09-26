@@ -37,23 +37,28 @@ namespace Joba.IBM.RPA.Cli
                 var choice = console.ShowMenu("Please provide the server address, or ESC to provide a new one", choices);
                 if (!choice.HasValue)
                 {
-                    console.Write($"Skipped. Type the server address ('{ServerAddress.DefaultOptionName}' to use the default): ");
-                    return new ServerAddress(Console.ReadLine());
+                    console.Write($"Skipped. Type the server address (hit ENTER to use the default): ");
+                    return new ServerAddress(ReadAddressFromConsole());
                 }
 
                 return new ServerAddress(choices[choice.Value]);
             }
 
-            console.Write($"Type the server address ('{ServerAddress.DefaultOptionName}' to use the default): "); //TODO: empty instead of 'default'
-            return new ServerAddress(Console.ReadLine());
+            console.Write("Type the server address (hit ENTER to use the default): ");
+            return new ServerAddress(ReadAddressFromConsole());
+        }
+
+        private string? ReadAddressFromConsole()
+        {
+            var address = Console.ReadLine();
+            return string.IsNullOrWhiteSpace(address) ? ServerAddress.DefaultUrl : address;
         }
     }
 
     struct ServerAddress
     {
-        internal const string Domain = "wdgautomation.com";
-        internal const string DefaultUrl = $"https://api.{Domain}/v1.0/";
-        internal const string DefaultOptionName = "default";
+        internal const string Domain = "rpa.ibm.com";
+        internal const string DefaultUrl = "https://api.wdgautomation.com/v1.0/";
         private static readonly IDictionary<string, string> appToApiMappings;
         private readonly Uri? address;
 
@@ -77,15 +82,13 @@ namespace Joba.IBM.RPA.Cli
 
         internal ServerAddress(string? url)
         {
-            if (url == DefaultOptionName)
-                address = BuildUri(DefaultUrl);
-            else if (!string.IsNullOrEmpty(url))
+            if (!string.IsNullOrEmpty(url))
                 address = BuildUri(url);
         }
 
-        internal bool IsDefined => address != null;
-        internal Uri ToUri() => address ?? throw new InvalidOperationException("The address is empty for this instance.");
-        public override string ToString() => address != null ? $"{address}" : "<empty>";
+        internal readonly bool IsDefined => address != null;
+        internal readonly Uri ToUri() => address ?? throw new InvalidOperationException("The address is empty for this instance.");
+        public override readonly string ToString() => address != null ? address.ToString() : "<empty>";
 
         private static Uri BuildUri(string url)
         {

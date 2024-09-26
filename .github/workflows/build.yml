@@ -1,7 +1,11 @@
 name: build
 
 on:
-  pull_request:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
     paths-ignore:
       - 'docs/**'
       - '**.md'

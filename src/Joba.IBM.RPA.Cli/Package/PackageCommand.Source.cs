@@ -11,7 +11,7 @@ namespace Joba.IBM.RPA.Cli
             public PackageSourceCommand() : base(CommandName, "Adds a package source")
             {
                 var alias = new Argument<string>("alias", "The source name");
-                var url = new Option<string?>("--url", $"The server domain url. You can specify '{ServerAddress.DefaultOptionName}' to use {ServerAddress.DefaultUrl}");
+                var url = new Option<string?>("--url", $"The server domain url. If you do not specify, the default '{ServerAddress.DefaultUrl}' will be used");
                 var region = new Option<string?>("--region", "The region of the package source");
                 var userName = new Option<string?>("--userName", "The user name to authenticate, usually the e-mail, to use for authentication");
                 var tenant = new Option<int?>("--tenant", "The tenant code to use for authentication");
