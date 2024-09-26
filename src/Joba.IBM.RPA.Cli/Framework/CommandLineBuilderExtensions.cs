@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
+using NReco.Logging.File;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
